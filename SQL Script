@@ -1,0 +1,18 @@
+-- Extract Orders, Sellers, Products, Returns Data
+SELECT 
+    o.OrderID, 
+    o.OrderDate, 
+    o.CustomerID, 
+    s.SellerID, 
+    s.SellerName, 
+    p.ProductID, 
+    p.Category, 
+    p.Price, 
+    o.Quantity, 
+    (o.Quantity * p.Price) AS TotalAmount,
+    CASE WHEN r.OrderID IS NOT NULL THEN 1 ELSE 0 END AS ReturnFlag
+FROM Orders o
+JOIN Sellers s ON o.SellerID = s.SellerID
+JOIN Products p ON o.ProductID = p.ProductID
+LEFT JOIN Returns r ON o.OrderID = r.OrderID
+WHERE o.OrderDate >= '2023-01-01';
