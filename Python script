@@ -1,0 +1,45 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# Load Dataset
+df = pd.read_csv('meesho_sales_data.csv')
+
+# Top 10 Products by Revenue
+top_products = df.groupby('ProductID')['TotalAmount'].sum().sort_values(ascending=False).head(10)
+print("Top 10 Products by Revenue:\n", top_products)
+
+# Plot Top Products
+plt.figure(figsize=(8,6))
+top_products.plot(kind='barh', color='skyblue')
+plt.title('Top 10 Products by Revenue')
+plt.xlabel('Revenue')
+plt.ylabel('ProductID')
+plt.show()
+
+# Seller Performance Summary
+seller_summary = df.groupby('SellerName').agg({
+    'TotalAmount': 'sum',
+    'OrderID': 'count',
+    'ReturnFlag': 'sum'
+}).reset_index()
+
+seller_summary['ReturnRate (%)'] = (seller_summary['ReturnFlag'] / seller_summary['OrderID']) * 100
+top_sellers = seller_summary.sort_values(by='TotalAmount', ascending=False).head(5)
+print("\nTop 5 Sellers Performance:\n", top_sellers)
+
+# Monthly Sales Trend Forecast (Moving Average)
+df['OrderDate'] = pd.to_datetime(df['OrderDate'])
+monthly_sales = df.set_index('OrderDate').resample('M')['TotalAmount'].sum()
+
+plt.figure(figsize=(10,6))
+monthly_sales.plot(label='Monthly Sales', marker='o')
+monthly_sales.rolling(window=3).mean().plot(label='3-Month Moving Avg', linestyle='--')
+plt.title('Meesho Monthly Sales Trend')
+plt.xlabel('Month')
+plt.ylabel('Total Revenue')
+plt.legend()
+plt.show()
+
+# Export Aggregated Data for Power BI
+seller_summary.to_csv('seller_performance_summary.csv', index=False)
+monthly_sales.to_csv('monthly_sales_trend.csv')
